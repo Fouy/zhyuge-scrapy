@@ -3,7 +3,7 @@ import scrapy
 import re
 from scrapy import Request
 
-from zhyuge.items import MiaozMovieItem, MiaozTeleplayItem
+from zhyuge.items import MiaozMovieItem, MiaozTeleplayItem, ImageItem
 
 '''
 喵爪电影Spider
@@ -84,6 +84,12 @@ class MiaozSpider(scrapy.Spider):
         self.process_response(response, item)
         yield item
 
+        # 生成图片下载Request
+        imageItem = ImageItem()
+        image_urls = [item['logo_url']]
+        imageItem['image_urls'] = image_urls
+        yield imageItem
+
     '''
     处理电视剧详情页信息
     '''
@@ -92,6 +98,12 @@ class MiaozSpider(scrapy.Spider):
         item = MiaozTeleplayItem()
         self.process_response(response, item)
         yield item
+
+        # 生成图片下载Request
+        imageItem = ImageItem()
+        image_urls = [item['logo_url']]
+        imageItem['image_urls'] = image_urls
+        yield imageItem
 
     '''
     提取response信息

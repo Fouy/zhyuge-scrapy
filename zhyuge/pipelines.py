@@ -4,11 +4,18 @@
 #
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
+import hashlib
+
 import pymongo
 import pymysql
+from scrapy.exceptions import DropItem
+from scrapy.pipelines.images import ImagesPipeline
+from scrapy import Request
+from scrapy.utils.python import to_bytes
 from twisted.enterprise import adbapi
 
-from zhyuge.items import MiaozMovieItem
+from zhyuge.common.constants import ClassifyEnum
+from zhyuge.items import MiaozMovieItem, ImageItem, MiaozTeleplayItem
 from zhyuge.service.db_service import MovieTypeService, MovieService, RegionService, StationService, DownloadUrlService, \
     TeleplayService
 
@@ -31,6 +38,9 @@ class MiaozMoviePipeline(object):
     pipeline默认调用
     '''
     def process_item(self, item, spider):
+        if not isinstance(item, MiaozMovieItem) and not isinstance(item, MiaozTeleplayItem):
+            return item
+
         # 处理类型信息
         if item['type_ids']:
             item['type_ids'] = self.process_type_names(item['type_ids'])
@@ -117,6 +127,36 @@ class MiaozMoviePipeline(object):
                 result = result + ',' + str(entity['type_id'])
         return result
 
+
+'''
+电影图片
+'''
+class ImagesPipeline(ImagesPipeline):
+
+    def file_path(self, request, response=None, info=None):
+        # image_guid = request.url.split('/')[-1]
+        image_guid = hashlib.sha1(to_bytes(request.url)).hexdigest()
+        return 'huge/%s.jpg' % (image_guid)
+
+    def get_media_requests(self, item, info):
+        if not isinstance(item, ImageItem):
+            return item
+
+        for image_url in item['image_urls']:
+            request = Request(image_url)
+            request.meta['classify'] = 2
+            yield request
+
+
+    def item_completed(self, results, item, info):
+        if not isinstance(item, ImageItem):
+            return item
+
+        image_paths = [x['path'] for ok, x in results if ok]
+        if not image_paths:
+            raise DropItem("Item contains no images")
+        item['image_paths'] = image_paths
+        return item
 
 
 '''

@@ -65,3 +65,12 @@ class MiaozTeleplayItem(scrapy.Item):
     station_movie_id = scrapy.Field()
     # 下载链接URLS
     download_urls = scrapy.Field()
+
+
+'''
+图片下载
+'''
+class ImageItem(scrapy.Item):
+    image_urls = scrapy.Field()
+    images = scrapy.Field()
+    image_paths = scrapy.Field()

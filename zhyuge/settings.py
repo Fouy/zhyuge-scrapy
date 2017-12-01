@@ -66,6 +66,7 @@ ROBOTSTXT_OBEY = False
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
    'zhyuge.pipelines.MiaozMoviePipeline': 300,
+   'zhyuge.pipelines.ImagesPipeline': 400,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
@@ -99,4 +100,9 @@ MYSQL_PORT = 3306               # 端口
 MYSQL_DBNAME = 'zhyuge'         # 数据库名
 MYSQL_USER = 'root'             # 账号
 MYSQL_PASSWD = '123456'         # 密码
+
+# 设置图片下载路径
+IMAGES_STORE = '/Users/xuefeihu/Desktop/images'
+# 过期天数
+IMAGES_EXPIRES = 90  #90天内抓取的都不会被重抓
 
