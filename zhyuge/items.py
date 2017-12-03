@@ -74,3 +74,5 @@ class ImageItem(scrapy.Item):
     image_urls = scrapy.Field()
     images = scrapy.Field()
     image_paths = scrapy.Field()
+    # 图片实际保存路径
+    real_url = scrapy.Field()

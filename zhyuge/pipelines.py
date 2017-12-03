@@ -40,6 +40,9 @@ class MiaozMoviePipeline(object):
     def process_item(self, item, spider):
         if not isinstance(item, MiaozMovieItem) and not isinstance(item, MiaozTeleplayItem):
             return item
+        # urls为空时，舍弃影片
+        if not item['download_urls']:
+            return
 
         # 处理类型信息
         if item['type_ids']:
@@ -57,18 +60,12 @@ class MiaozMoviePipeline(object):
         params = {'station_id': item['station_id'], 'station_movie_id': item['station_movie_id']}
         if isinstance(item, MiaozMovieItem):
             result = self.movieService.select_by_station(params)
-            if result:
-                self.movieService.update_by_station(item)
-                movie_id = result['movie_id']
-            else:
+            if not result:
                 movie_id = self.movieService.insert(item)
         else:
             type = 2 # 电视剧
             result = self.teleplayService.select_by_station(params)
-            if result:
-                self.teleplayService.update_by_station(item)
-                movie_id = result['play_id']
-            else:
+            if not result:
                 movie_id = self.teleplayService.insert(item)
 
         # 下载链接入库
@@ -134,9 +131,8 @@ class MiaozMoviePipeline(object):
 class ImagesPipeline(ImagesPipeline):
 
     def file_path(self, request, response=None, info=None):
-        # image_guid = request.url.split('/')[-1]
-        image_guid = hashlib.sha1(to_bytes(request.url)).hexdigest()
-        return 'huge/%s.jpg' % (image_guid)
+        # image_guid = hashlib.sha1(to_bytes(request.url)).hexdigest()
+        return request.meta['real_url']
 
     def get_media_requests(self, item, info):
         if not isinstance(item, ImageItem):
@@ -145,6 +141,7 @@ class ImagesPipeline(ImagesPipeline):
         for image_url in item['image_urls']:
             request = Request(image_url)
             request.meta['classify'] = 2
+            request.meta['real_url'] = item['real_url']
             yield request
 
 
