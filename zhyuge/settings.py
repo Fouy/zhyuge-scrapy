@@ -102,7 +102,7 @@ MYSQL_USER = 'root'             # 账号
 MYSQL_PASSWD = '123456'         # 密码
 
 # 设置图片下载路径
-IMAGES_STORE = '/Users/xuefeihu/Desktop/images'
+IMAGES_STORE = '/Users/xuefeihu/hugege/code-sublime/zhyuge-images'
 # 过期天数
 IMAGES_EXPIRES = 90  #90天内抓取的都不会被重抓
 

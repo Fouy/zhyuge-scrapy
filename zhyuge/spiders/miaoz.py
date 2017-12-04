@@ -6,7 +6,7 @@ import re
 from scrapy import Request
 from scrapy.utils.python import to_bytes
 
-from zhyuge.items import MiaozMovieItem, MiaozTeleplayItem, ImageItem
+from zhyuge.items import MiaozMovieItem, ImageItem
 
 '''
 喵爪电影Spider
@@ -85,6 +85,7 @@ class MiaozSpider(scrapy.Spider):
         # print(response.text)
         item = MiaozMovieItem()
         self.process_response(response, item)
+        item['type'] = 1
 
         # 生成图片下载Request
         imageItem = ImageItem()
@@ -92,7 +93,7 @@ class MiaozSpider(scrapy.Spider):
         imageItem['image_urls'] = image_urls
         # 图片实际保存路径
         image_guid = hashlib.sha1(to_bytes(item['logo_url'])).hexdigest()
-        imageItem['real_url'] = 'miaoz/%s.jpg' % (image_guid)
+        imageItem['real_url'] = 'images/miaoz/%s.jpg' % (image_guid)
         item['logo_url'] = '/' + imageItem['real_url']
 
         yield item
@@ -103,8 +104,9 @@ class MiaozSpider(scrapy.Spider):
     '''
     def parse_teleplay_detail(self, response):
         # print(response.text)
-        item = MiaozTeleplayItem()
+        item = MiaozMovieItem()
         self.process_response(response, item)
+        item['type'] = 2
 
         # 生成图片下载Request
         imageItem = ImageItem()
@@ -112,7 +114,7 @@ class MiaozSpider(scrapy.Spider):
         imageItem['image_urls'] = image_urls
         # 图片实际保存路径
         image_guid = hashlib.sha1(to_bytes(item['logo_url'])).hexdigest()
-        imageItem['real_url'] = 'miaoz/%s.jpg' % (image_guid)
+        imageItem['real_url'] = 'images/miaoz/%s.jpg' % (image_guid)
         item['logo_url'] = '/' + imageItem['real_url']
 
         yield item

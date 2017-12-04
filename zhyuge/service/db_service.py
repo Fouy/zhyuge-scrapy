@@ -18,16 +18,14 @@ class MovieService():
     def insert(self, item):
         cursor = self.conn.cursor()
         try:
-            sql = 'insert into `movie_temp` ( `status`, `en_name`, `language`, `create_time`, `actor`, `playwright`, `type_ids`, `score`, `logo_url`,' \
-                  ' `region_ids`, `year`, `name`, `length`, `release_date`, `modify_time`, `director`, `station_id`, `introduction`, `source`, `station_movie_id`) ' \
+            sql = 'insert into `movie` ( `status`, `en_name`, `language`, `create_time`, `actor`, `playwright`, `type_ids`, `score`, `logo_url`,' \
+                  ' `region_ids`, `year`, `name`, `length`, `release_date`, `modify_time`, `director`, `station_id`, `introduction`, `source`, `station_movie_id`, `type`) ' \
                   + "values ( '1', %s, %s, NOW(), %s, %s, %s, %s, %s," \
-                    " %s, %s, %s, %s, %s, NOW(), %s, %s, %s, %s, %s)"
+                    " %s, %s, %s, %s, %s, NOW(), %s, %s, %s, %s, %s, %s)"
             params = (
-                item["en_name"], item["language"], item["actor"], item["playwright"], item["type_ids"], item["score"],
-                item["logo_url"],
+                item["en_name"], item["language"], item["actor"], item["playwright"], item["type_ids"], item["score"], item["logo_url"],
                 item["region_ids"], item["year"], item["name"], item["length"], item["release_date"], item["director"],
-                item["station_id"],
-                item["introduction"], item["source"], item["station_movie_id"])
+                item["station_id"], item["introduction"], item["source"], item["station_movie_id"], item["type"])
             cursor.execute(sql, params)
             self.conn.commit()
 
@@ -42,7 +40,7 @@ class MovieService():
     def update_by_station(self, item):
         cursor = self.conn.cursor()
         try:
-            sql = "update `movie_temp` set `source`=%s, `en_name`=%s, `language`=%s, `actor`=%s, `playwright`=%s, " \
+            sql = "update `movie` set `source`=%s, `en_name`=%s, `language`=%s, `actor`=%s, `playwright`=%s, " \
                   "`score`=%s, `logo_url`=%s, `region_ids`=%s, `year`=%s, `name`=%s, `length`=%s, `release_date`=%s, " \
                   "`type_ids`=%s, `director`=%s, `introduction`=%s, `modify_time`=NOW() " \
                   "where `station_id`='1' and `station_movie_id`='9999' "
@@ -63,83 +61,13 @@ class MovieService():
     def select_by_station(self, item):
         cursor = self.conn.cursor()
         try:
-            sql = 'select * from `movie_temp` where station_id = %s and station_movie_id = %s '
+            sql = 'select * from `movie` where station_id = %s and station_movie_id = %s '
             params = (item['station_id'], item['station_movie_id'])
             cursor.execute(sql, params)
             result = cursor.fetchone()
             return result
         except Exception as e:
             self.logger.error('根据station信息查询movie实体失败', e)
-
-
-'''
-teleplay数据库操作
-'''
-class TeleplayService():
-
-    logger = logging.getLogger()
-
-    def __init__(self):
-        self.conn = DBTemplete().connectDB()
-
-    '''
-    插入操作
-    '''
-    def insert(self, item):
-        cursor = self.conn.cursor()
-        try:
-            sql = 'insert into `teleplay` ( `status`, `en_name`, `language`, `create_time`, `actor`, `playwright`, `type_ids`, `score`, `logo_url`,' \
-                  ' `region_ids`, `year`, `name`, `length`, `release_date`, `modify_time`, `director`, `station_id`, `introduction`, `source`, `station_movie_id`) ' \
-                  + "values ( '1', %s, %s, NOW(), %s, %s, %s, %s, %s," \
-                    " %s, %s, %s, %s, %s, NOW(), %s, %s, %s, %s, %s)"
-            params = (
-                item["en_name"], item["language"], item["actor"], item["playwright"], item["type_ids"], item["score"],
-                item["logo_url"],
-                item["region_ids"], item["year"], item["name"], item["length"], item["release_date"], item["director"],
-                item["station_id"],
-                item["introduction"], item["source"], item["station_movie_id"])
-            cursor.execute(sql, params)
-            self.conn.commit()
-
-            return cursor.lastrowid
-        except Exception as e:
-            self.conn.rollback()
-            self.logger.error('插入teleplay失败', e)
-
-    '''
-    更新操作
-    '''
-    def update_by_station(self, item):
-        cursor = self.conn.cursor()
-        try:
-            sql = "update `teleplay` set `source`=%s, `en_name`=%s, `language`=%s, `actor`=%s, `playwright`=%s, " \
-                  "`score`=%s, `logo_url`=%s, `region_ids`=%s, `year`=%s, `name`=%s, `length`=%s, `release_date`=%s, " \
-                  "`type_ids`=%s, `director`=%s, `introduction`=%s, `modify_time`=NOW() " \
-                  "where `station_id`='1' and `station_movie_id`='9999' "
-            params = (item["source"], item["en_name"], item["language"], item["actor"], item["playwright"],
-                item["score"], item["logo_url"], item["region_ids"], item["year"], item["name"], item["length"], item["release_date"],
-                item["type_ids"], item["director"], item["introduction"])
-            cursor.execute(sql, params)
-            self.conn.commit()
-        except Exception as e:
-            self.conn.rollback()
-            self.logger.error('更新teleplay信息失败', e)
-
-
-    '''
-    根据station信息查询实体
-    item = { 'station_id : 1, 'station_movie_id' : 2}
-    '''
-    def select_by_station(self, item):
-        cursor = self.conn.cursor()
-        try:
-            sql = 'select * from `teleplay` where station_id = %s and station_movie_id = %s '
-            params = (item['station_id'], item['station_movie_id'])
-            cursor.execute(sql, params)
-            result = cursor.fetchone()
-            return result
-        except Exception as e:
-            self.logger.error('根据station信息查询teleplay实体失败', e)
 
 
 '''

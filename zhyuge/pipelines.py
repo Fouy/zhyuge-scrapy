@@ -15,9 +15,8 @@ from scrapy.utils.python import to_bytes
 from twisted.enterprise import adbapi
 
 from zhyuge.common.constants import ClassifyEnum
-from zhyuge.items import MiaozMovieItem, ImageItem, MiaozTeleplayItem
-from zhyuge.service.db_service import MovieTypeService, MovieService, RegionService, StationService, DownloadUrlService, \
-    TeleplayService
+from zhyuge.items import MiaozMovieItem, ImageItem
+from zhyuge.service.db_service import MovieTypeService, MovieService, RegionService, StationService, DownloadUrlService
 
 '''
 喵爪电影MySQL入库
@@ -28,7 +27,6 @@ class MiaozMoviePipeline(object):
 
     def __init__(self):
         self.movieService = MovieService()
-        self.teleplayService = TeleplayService()
         self.movieTypeService = MovieTypeService()
         self.regionService = RegionService()
         self.stationService = StationService()
@@ -38,7 +36,7 @@ class MiaozMoviePipeline(object):
     pipeline默认调用
     '''
     def process_item(self, item, spider):
-        if not isinstance(item, MiaozMovieItem) and not isinstance(item, MiaozTeleplayItem):
+        if not isinstance(item, MiaozMovieItem):
             return item
         # urls为空时，舍弃影片
         if not item['download_urls']:
@@ -56,19 +54,13 @@ class MiaozMoviePipeline(object):
 
         # 电影/电视剧 数据入库（insertOrUpdate）
         movie_id = None
-        type = 1 # 电影
         params = {'station_id': item['station_id'], 'station_movie_id': item['station_movie_id']}
-        if isinstance(item, MiaozMovieItem):
-            result = self.movieService.select_by_station(params)
-            if not result:
-                movie_id = self.movieService.insert(item)
-        else:
-            type = 2 # 电视剧
-            result = self.teleplayService.select_by_station(params)
-            if not result:
-                movie_id = self.teleplayService.insert(item)
+        result = self.movieService.select_by_station(params)
+        if not result:
+            movie_id = self.movieService.insert(item)
 
         # 下载链接入库
+        type = item['type']
         if movie_id and item['download_urls']:
             urls = []
             for index, url in enumerate(item['download_urls']):
