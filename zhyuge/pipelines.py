@@ -56,6 +56,9 @@ class MiaozMoviePipeline(object):
         movie_id = None
         params = {'station_id': item['station_id'], 'station_movie_id': item['station_movie_id']}
         result = self.movieService.select_by_station(params)
+        if item['type'] == 2: # 电视剧
+            if len(item['download_urls']) > 0:
+                item['length'] = len(item['download_urls'])
         if not result:
             movie_id = self.movieService.insert(item)
 
