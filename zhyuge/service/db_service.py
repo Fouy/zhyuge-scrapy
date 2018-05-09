@@ -2,6 +2,10 @@ import logging
 
 from zhyuge.service.dbhelper import DBTemplete
 
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+章鱼哥电影
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
 '''
 movie数据库操作
 '''
@@ -19,13 +23,13 @@ class MovieService():
         cursor = self.conn.cursor()
         try:
             sql = 'insert into `movie` ( `status`, `en_name`, `language`, `create_time`, `actor`, `playwright`, `type_ids`, `score`, `logo_url`,' \
-                  ' `region_ids`, `year`, `name`, `length`, `release_date`, `modify_time`, `director`, `station_id`, `introduction`, `source`, `station_movie_id`, `type`) ' \
+                  ' `region_ids`, `year`, `name`, `length`, `release_date`, `modify_time`, `director`, `station_id`, `introduction`, `source`, `station_movie_id`, `type`, `station_url`) ' \
                   + "values ( '1', %s, %s, NOW(), %s, %s, %s, %s, %s," \
-                    " %s, %s, %s, %s, %s, NOW(), %s, %s, %s, %s, %s, %s)"
+                    " %s, %s, %s, %s, %s, NOW(), %s, %s, %s, %s, %s, %s, %s)"
             params = (
                 item["en_name"], item["language"], item["actor"], item["playwright"], item["type_ids"], item["score"], item["logo_url"],
                 item["region_ids"], item["year"], item["name"], item["length"], item["release_date"], item["director"],
-                item["station_id"], item["introduction"], item["source"], item["station_movie_id"], item["type"])
+                item["station_id"], item["introduction"], item["source"], item["station_movie_id"], item["type"], item["station_url"])
             cursor.execute(sql, params)
             self.conn.commit()
 
@@ -271,3 +275,152 @@ class DownloadUrlService():
 
 
 
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+章鱼哥图片
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+
+'''
+picture数据库操作
+'''
+class PictureService():
+
+    logger = logging.getLogger()
+
+    def __init__(self):
+        self.conn = DBTemplete().connectDB()
+
+    '''
+    插入操作
+    '''
+    def insert(self, item):
+        cursor = self.conn.cursor()
+        try:
+            sql = 'insert into `picture` ( `station_pic_id`, `source`, `status`, `type_id`, `modify_time`, `logo_url`, ' \
+                  '`station_id`, `create_time`, `name`, `station_url`) ' \
+                  'values ( %s, %s, "1", %s, NOW(), %s, %s, NOW(), %s, %s)'
+
+            params = (
+                item["station_pic_id"], item["source"], item["type_id"], item["logo_url"],
+                item["station_id"], item["name"], item["station_url"])
+            cursor.execute(sql, params)
+            self.conn.commit()
+
+            return cursor.lastrowid
+        except Exception as e:
+            self.conn.rollback()
+            self.logger.error('插入picture失败', e)
+
+    '''
+    根据station信息查询实体
+    item = { 'station_id : 1, 'station_pic_id' : 2}
+    '''
+    def select_by_station(self, item):
+        cursor = self.conn.cursor()
+        try:
+            sql = 'select * from `picture` where station_id = %s and station_pic_id = %s '
+            params = (item['station_id'], item['station_pic_id'])
+            cursor.execute(sql, params)
+            result = cursor.fetchone()
+            return result
+        except Exception as e:
+            self.logger.error('根据station信息查询picture实体失败', e)
+
+
+'''
+picture_type数据库操作
+'''
+class PictureTypeService(object):
+
+    def __init__(self):
+        self.conn = DBTemplete().connectDB()
+
+    '''
+    插入操作
+    '''
+    def insert(self, item):
+        cursor = self.conn.cursor()
+        try:
+            sql = 'insert into `picture_type` (`name`) values ( %s )'
+            params = (item["name"])
+            cursor.execute(sql, params)
+            self.conn.commit()
+
+            return cursor.lastrowid
+        except:
+            self.conn.rollback()
+            print('插入picture_type失败')
+
+    '''
+    根据type_id查询实体
+    '''
+    def select_by_id(self, type_id):
+        cursor = self.conn.cursor()
+        try:
+            sql = 'select * from `picture_type` where type_id = %s '
+            params = (type_id)
+            cursor.execute(sql, params)
+            result = cursor.fetchone()
+            return result
+        except:
+            print('查询picture_type失败')
+
+    '''
+    根据name查询实体
+    '''
+    def select_by_name(self, name):
+        cursor = self.conn.cursor()
+        try:
+            sql = 'select * from `picture_type` where name = %s '
+            params = (name)
+            cursor.execute(sql, params)
+            result = cursor.fetchone()
+            return result
+        except:
+            print('查询picture_type失败')
+
+'''
+picture_url数据库操作
+'''
+class PictureUrlService():
+
+    logger = logging.getLogger()
+
+    def __init__(self):
+        self.conn = DBTemplete().connectDB()
+
+    '''
+    批量插入操作
+    '''
+    def batch_insert(self, list):
+        cursor = self.conn.cursor()
+        try:
+            # 检查是否已经存储URL, 已存储则直接返回
+            result = self.select_by_url(list[0]['url'])
+            if result:
+                return
+
+            for item in list:
+                sql = "insert into `picture_url` ( `modify_time`, `order`, `picture_id`, `create_time`, `url`) " \
+                      "values ( NOW(), %s, %s, NOW(), %s);"
+                params = (item["order"], item["picture_id"], item["url"])
+                cursor.execute(sql, params)
+            self.conn.commit()
+        except Exception as e:
+            self.conn.rollback()
+            self.logger.error('picture_url批量插入操作失败', e)
+
+    '''
+    根据URL查询实体
+    '''
+    def select_by_url(self, url):
+        cursor = self.conn.cursor()
+        try:
+            sql = 'select * from `picture_url` where url = %s '
+            params = (url)
+            cursor.execute(sql, params)
+            result = cursor.fetchone()
+            return result
+        except Exception as e:
+            self.logger.error('查询picture_url失败', e)

@@ -15,15 +15,20 @@ from scrapy.utils.python import to_bytes
 from twisted.enterprise import adbapi
 
 from zhyuge.common.constants import ClassifyEnum
-from zhyuge.items import MiaozMovieItem, ImageItem
-from zhyuge.service.db_service import MovieTypeService, MovieService, RegionService, StationService, DownloadUrlService
+from zhyuge.items import MiaozMovieItem, ImageItem, PictureItem
+from zhyuge.service.db_service import MovieTypeService, MovieService, RegionService, StationService, DownloadUrlService, \
+    PictureService, PictureTypeService, PictureUrlService
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+章鱼哥电影
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 '''
-喵爪电影MySQL入库
+电影/电视剧MySQL入库
 '''
 class MiaozMoviePipeline(object):
 
-    station_name = '喵爪电影'
+    # station_name = '喵爪电影'
 
     def __init__(self):
         self.movieService = MovieService()
@@ -49,8 +54,9 @@ class MiaozMoviePipeline(object):
         if item['region_ids']:
             item['region_ids'] = self.process_region_name(item['region_ids'])
         # 处理站点信息
-        station_entity = self.stationService.select_by_name(self.station_name)
-        item['station_id'] = station_entity['station_id']
+        if item['source']:
+            station_entity = self.stationService.select_by_name(item['source'])
+            item['station_id'] = station_entity['station_id']
 
         # 电影/电视剧 数据入库（insertOrUpdate）
         movie_id = None
@@ -121,13 +127,18 @@ class MiaozMoviePipeline(object):
 
 
 '''
-电影图片
+图片下载
 '''
 class ImagesPipeline(ImagesPipeline):
 
+    # 重写下载地址
     def file_path(self, request, response=None, info=None):
         # image_guid = hashlib.sha1(to_bytes(request.url)).hexdigest()
         return request.meta['real_url']
+
+    # 重写缩略图地址
+    def thumb_path(self, request, thumb_id, response=None, info=None):
+        return request.meta['thumb_url']
 
     def get_media_requests(self, item, info):
         if not isinstance(item, ImageItem):
@@ -135,8 +146,9 @@ class ImagesPipeline(ImagesPipeline):
 
         for image_url in item['image_urls']:
             request = Request(image_url)
-            request.meta['classify'] = 2
+            request.meta['classify'] = 2    # 表示图片下载类型
             request.meta['real_url'] = item['real_url']
+            request.meta['thumb_url'] = item['thumb_url']
             yield request
 
 
@@ -176,3 +188,62 @@ class ZhyugePipeline(object):
     def process_item(self, item, spider):
         self.db['movie'].update({'station_movie_id': item['station_movie_id']}, {'$set' : item}, True)
         return item
+
+
+
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+章鱼哥图片
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+'''
+图片MySQL入库
+'''
+class PicturePipeline(object):
+
+    # station_name = '169美女'
+
+    def __init__(self):
+        self.pictureService = PictureService()
+        self.pictureTypeService = PictureTypeService()
+        self.stationService = StationService()
+        self.pictureUrlService = PictureUrlService()
+
+    '''
+    pipeline默认调用
+    '''
+    def process_item(self, item, spider):
+        if not isinstance(item, PictureItem):
+            return item
+        # urls为空时，舍弃
+        if not item['picture_urls']:
+            return
+
+        # 处理站点信息
+        if item['source']:
+            station_entity = self.stationService.select_by_name(item['source'])
+            item['station_id'] = station_entity['station_id']
+        # 处理类型信息（type_id）
+        if item['type_name']:
+            # print(item['type_name'])
+            type_entity = self.pictureTypeService.select_by_name(item['type_name'])
+            item['type_id'] = type_entity['type_id']
+
+        # 图片 数据入库（insertOrUpdate）
+        params = {'station_id': item['station_id'], 'station_pic_id': item['station_pic_id']}
+        result = self.pictureService.select_by_station(params)
+        if not result:
+            picture_id = self.pictureService.insert(item)
+        else:
+            picture_id = result['picture_id']
+
+        # URL入库
+        if item['picture_urls']:
+            for index, url in enumerate(item['picture_urls']):
+                url['picture_id'] = picture_id
+
+            self.pictureUrlService.batch_insert(item['picture_urls'])
+
+        return item
+
+

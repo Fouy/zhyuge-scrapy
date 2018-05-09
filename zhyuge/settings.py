@@ -39,10 +39,11 @@ ROBOTSTXT_OBEY = False
 #TELNETCONSOLE_ENABLED = False
 
 # Override the default request headers:
-#DEFAULT_REQUEST_HEADERS = {
-#   'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-#   'Accept-Language': 'en',
-#}
+DEFAULT_REQUEST_HEADERS = {
+  'User-Agent' : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36',
+  'Accept' : 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+  'Accept-Language': 'zh-CN,zh;q=0.9',
+}
 
 # Enable or disable spider middlewares
 # See http://scrapy.readthedocs.org/en/latest/topics/spider-middleware.html
@@ -67,6 +68,7 @@ ROBOTSTXT_OBEY = False
 ITEM_PIPELINES = {
    'zhyuge.pipelines.MiaozMoviePipeline': 300,
    'zhyuge.pipelines.ImagesPipeline': 400,
+   'zhyuge.pipelines.PicturePipeline': 500,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
@@ -104,5 +106,7 @@ MYSQL_PASSWD = '123456'         # 密码
 # 设置图片下载路径
 IMAGES_STORE = '/Users/xuefeihu/hugege/code-sublime/zhyuge-images'
 # 过期天数
-IMAGES_EXPIRES = 90  #90天内抓取的都不会被重抓
-
+# IMAGES_EXPIRES = 90  #90天内抓取的都不会被重抓
+IMAGES_THUMBS = {
+    'small': (146, 208)
+}

@@ -1,63 +1,46 @@
 # -*- coding: utf-8 -*-
 import hashlib
+import json
+import re
 
 import scrapy
-import re
 from scrapy import Request
 from scrapy.utils.python import to_bytes
 
 from zhyuge.items import MiaozMovieItem, ImageItem
 
 '''
-喵爪电影Spider
+喵爪电影更新爬虫
 '''
-class MiaozSpider(scrapy.Spider):
-    name = 'miaoz'
+class MiaozupdateSpider(scrapy.Spider):
+    name = 'miaozupdate'
     allowed_domains = ['www.miao-z.com']
     start_urls = ['http://www.miao-z.com/']
 
     # 喵爪电影基地址
     base_url = 'http://www.miao-z.com'
-    '''
-    起始URL：参数顺序依次为：
-        分类：0电影 1电视剧、
-        类型：1爱情 2喜剧 3动画 4剧情 5科幻 6动作 7悬疑 8犯罪 9惊悚 10恐怖 11战争 12情色 13音乐、
-        地区：1中国 2美国 3英国 4日本 5韩国 6法国、
-        年份：2017 2016 2015 2014 2013 2012 2011 2010 2009 2008 2007 2006
-    '''
-    first_url = 'http://www.miao-z.com/list/{classify}-{type}-{region}-{year}-1-1.html'
-    classifyList = [0, 1]
-    typeList = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
-    regionList = [1, 2, 3, 4, 5, 6]
-    yearList = [2017, 2016, 2015, 2014, 2013, 2012, 2011, 2010, 2009, 2008, 2007, 2006]
+    # 电影起始URL：首页最新更新的10页
+    first_movie_url = 'http://www.miao-z.com/latest_json?pn={pn}'
+    # 电视剧起始URL：电视剧最新的10页
+    first_drama_url = 'http://www.miao-z.com/tv?pn={pn}'
+    # 详情页地址
+    detail_url = 'http://www.miao-z.com/detail/{id}'
 
     '''
     开始请求列表
     '''
     def start_requests(self):
         # 抓取电影数据
-        for type in self.typeList:
-            for region in self.regionList:
-                for year in self.yearList:
-                    request = Request(self.first_url.format(classify=0, type=type, region=region, year=year), self.parse_pages)
-                    request.meta['classify'] = 0
-                    yield request
-
-        # request = Request(self.first_url.format(classify=0, type=1, region=1, year=2010), self.parse_pages)
-        # request.meta['classify'] = 0
-        # yield request
+        for pn in range(10):
+            request = Request(self.first_movie_url.format(pn=pn+1), self.parse_pages)
+            request.meta['classify'] = 0
+            yield request
 
         # 抓取电视剧数据
-        for type in self.typeList:
-            for region in self.regionList:
-                for year in self.yearList:
-                    request = Request(self.first_url.format(classify=1, type=type, region=region, year=year), self.parse_pages)
-                    request.meta['classify'] = 1
-                    yield request
-
-        # request = Request(self.first_url.format(classify=1, type=1, region=3, year=2015), self.parse_pages)
-        # request.meta['classify'] = 1
-        # yield request
+        for pn in range(10):
+            request = Request(self.first_drama_url.format(pn=pn+1), self.parse_pages)
+            request.meta['classify'] = 1
+            yield request
 
     '''
     处理每页内容
@@ -65,17 +48,17 @@ class MiaozSpider(scrapy.Spider):
     def parse_pages(self, response):
         # print(response.text)
         classify = response.meta['classify']
-        data = response.css('#content > div > div.article > div:nth-child(3)')
-        if data.css('table'):
-            list = data.css('table .nbg::attr(href)').extract()
-            for url in list:
-                full_url = self.base_url + url
-                func = None
-                if classify == 0: # 拉取电影
-                    func = self.parse_movie_detail
-                elif classify == 1: # 拉取电视剧
-                    func = self.parse_teleplay_detail
-                yield Request(full_url, func)
+        if classify == 0:  # 拉取电影
+            movies = json.loads(response.body_as_unicode())
+            for movie in movies:
+                yield Request(self.detail_url.format(id=movie['id']), self.parse_movie_detail)
+        elif classify == 1:  # 拉取电视剧
+            data = response.css('#content > div > div.article > div:nth-child(1)')
+            if data.css('table'):
+                list = data.css('table .nbg::attr(href)').extract()
+                for url in list:
+                    full_url = self.base_url + url
+                    yield Request(full_url, self.parse_teleplay_detail)
 
 
     '''
@@ -210,4 +193,3 @@ class MiaozSpider(scrapy.Spider):
         item['download_urls'] = urlList
         # 源站链接
         item['station_url'] = response.url
-
