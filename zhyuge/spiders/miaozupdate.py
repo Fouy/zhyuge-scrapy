@@ -122,7 +122,8 @@ class MiaozupdateSpider(scrapy.Spider):
                 playwriteStr = playwrite.css('::text').extract_first()
             else:
                 playwriteStr = playwriteStr + '、' + playwrite.css('::text').extract_first()
-        item['playwright'] = playwriteStr.strip()
+        if playwriteStr:
+            item['playwright'] = playwriteStr.strip()
         # 提取演员信息
         actorList = response.css('#info > span.actor > span.attrs > a')
         actorStr = ''
