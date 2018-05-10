@@ -122,8 +122,9 @@ class MiaozupdateSpider(scrapy.Spider):
                 playwriteStr = playwrite.css('::text').extract_first()
             else:
                 playwriteStr = playwriteStr + '、' + playwrite.css('::text').extract_first()
-        if playwriteStr:
-            item['playwright'] = playwriteStr.strip()
+        if playwriteStr and playwriteStr != '':
+            playwriteStr = playwriteStr.strip()
+        item['playwright'] = playwriteStr
         # 提取演员信息
         actorList = response.css('#info > span.actor > span.attrs > a')
         actorStr = ''
@@ -132,7 +133,9 @@ class MiaozupdateSpider(scrapy.Spider):
                 actorStr = actor.css('::text').extract_first()
             else:
                 actorStr = actorStr + '、' + actor.css('::text').extract_first()
-        item['actor'] = actorStr.strip()
+        if actorStr and actorStr != '':
+            actorStr = actorStr.strip()
+        item['actor'] = actorStr
         # 提取类型信息
         item['type_ids'] = response.css('#info > span[property="v:genre"]::text').extract_first().strip()
         # 提取国家信息
