@@ -194,7 +194,7 @@ class MiaozupdateSpider(scrapy.Spider):
         for downloadUrl in downloadUrls:
             temp_url = downloadUrl.css('td:nth-child(1) > p::text').extract_first()
             try:
-                if temp_url.find('://') or temp_url.find('magnet'):
+                if temp_url.find('://') >= 0 or temp_url.find('magnet') >= 0:
                     urlList.append(temp_url)
             except:
                 pass
