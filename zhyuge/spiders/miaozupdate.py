@@ -36,6 +36,10 @@ class MiaozupdateSpider(scrapy.Spider):
             request.meta['classify'] = 0
             yield request
 
+        # request = Request(self.first_movie_url.format(pn=1), self.parse_pages)
+        # request.meta['classify'] = 0
+        # yield request
+
         # 抓取电视剧数据
         for pn in range(10):
             request = Request(self.first_drama_url.format(pn=pn+1), self.parse_pages)
@@ -190,7 +194,7 @@ class MiaozupdateSpider(scrapy.Spider):
         for downloadUrl in downloadUrls:
             temp_url = downloadUrl.css('td:nth-child(1) > p::text').extract_first()
             try:
-                if temp_url.index('://'):
+                if temp_url.find('://') or temp_url.find('magnet'):
                     urlList.append(temp_url)
             except:
                 pass
