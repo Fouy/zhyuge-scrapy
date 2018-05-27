@@ -14,6 +14,7 @@ BOT_NAME = 'zhyuge'
 SPIDER_MODULES = ['zhyuge.spiders']
 NEWSPIDER_MODULE = 'zhyuge.spiders'
 
+LOG_LEVEL = 'INFO'
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'zhyuge (+http://www.yourdomain.com)'
