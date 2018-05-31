@@ -218,6 +218,9 @@ class PicturePipeline(object):
         # urls为空时，舍弃
         if not item['picture_urls']:
             return
+        # 处理url信息若logo_url为空，则默认第一张图片
+        if item['logo_url'] == '':
+            item['logo_url'] = item['picture_urls'][0]['url']
 
         # 处理站点信息
         if item['source']:
