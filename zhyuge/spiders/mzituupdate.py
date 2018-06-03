@@ -15,7 +15,7 @@ class MzituupdateSpider(scrapy.Spider):
     start_urls = ['http://www.mzitu.com/']
 
     # 更新的条数
-    updateCount = 50
+    updateCount = 10
 
     '''
     开始请求列表

@@ -54,3 +54,14 @@ class ZhyugeSpiderMiddleware(object):
 
     def spider_opened(self, spider):
         spider.logger.info('Spider opened: %s' % spider.name)
+
+'''
+代理设置
+'''
+class ProxyMiddleware(object):
+    # overwrite process request
+    def process_request(self, request, spider):
+        # Set the location of the proxy
+        # request.meta['proxy'] = "http://172.16.221.217:12345"
+        # request.meta['proxy'] = "http://139.196.144.122:9999"
+        request.meta['proxy'] = "http://123.7.61.8:53281"

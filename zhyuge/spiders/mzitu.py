@@ -31,36 +31,45 @@ class MzituSpider(scrapy.Spider):
         # 抓取图片数据（初始化抓取）
 
         # xinggan 性感妹子
-        order = 1
-        for i in range(2, 111):
-            request = Request(self.first_url.format(type='xinggan', pageNo=i), self.parse_pages)
-            request.meta['order'] = order
-            yield request
+        # order = 1
+        # for i in range(2, 111):
+        #     request = Request(self.first_url.format(type='xinggan', pageNo=i), self.parse_pages)
+        #     request.meta['order'] = order
+        #     yield request
+        #
+        # # japan 日本妹子
+        # order = 2
+        # for i in range(2, 28):
+        #     request = Request(self.first_url.format(type='japan', pageNo=i), self.parse_pages)
+        #     request.meta['order'] = order
+        #     yield request
+        #
+        # # taiwan 台湾妹子
+        # order = 3
+        # for i in range(2, 11):
+        #     request = Request(self.first_url.format(type='taiwan', pageNo=i), self.parse_pages)
+        #     request.meta['order'] = order
+        #     yield request
+        #
+        # # mm 清纯妹子
+        # order = 4
+        # for i in range(2, 31):
+        #     request = Request(self.first_url.format(type='mm', pageNo=i), self.parse_pages)
+        #     request.meta['order'] = order
+        #     yield request
 
-        # japan 日本妹子
-        order = 2
-        for i in range(2, 28):
-            request = Request(self.first_url.format(type='japan', pageNo=i), self.parse_pages)
-            request.meta['order'] = order
-            yield request
-
-        # taiwan 台湾妹子
-        order = 3
-        for i in range(2, 11):
-            request = Request(self.first_url.format(type='taiwan', pageNo=i), self.parse_pages)
-            request.meta['order'] = order
-            yield request
-
-        # mm 清纯妹子
-        order = 4
-        for i in range(2, 31):
-            request = Request(self.first_url.format(type='mm', pageNo=i), self.parse_pages)
-            request.meta['order'] = order
-            yield request
-
-        # request = Request(self.first_url.format(type='xinggan', pageNo=2), self.parse_pages)
-        # request.meta['order'] = 1
-        # yield request
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept-Encoding': 'gzip, deflate',
+            'Accept-Language': 'zh-CN,zh;q=0.9',
+            'Connection': 'keep-alive',
+            'Host': 'www.mzitu.com',
+            'Referer': 'http://www.mzitu.com/zipai/',
+        }
+        request = Request(url='http://www.mzitu.com/xinggan/page/2/', headers=headers, callback=self.parse_pages)
+        request.meta['order'] = 1
+        yield request
 
     '''
     处理每页内容
