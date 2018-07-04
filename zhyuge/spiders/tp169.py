@@ -11,16 +11,16 @@ from zhyuge.items import PictureItem, PictureUrlItem
 '''
 class Tp169Spider(scrapy.Spider):
     name = 'tp169'
-    allowed_domains = ['www.169tp.com']
-    start_urls = ['http://www.169tp.com/']
+    allowed_domains = ['www.169we.com']
+    start_urls = ['http://www.169we.com/']
 
     # 169tp图片基地址
-    base_url = 'http://www.169tp.com'
+    base_url = 'http://www.169we.com'
     '''
     起始URL：参数顺序依次为：
         分类：xingganmeinv 性感美女、wangyouzipai 网友自拍、gaogensiwa 高跟丝袜、xiyangmeinv 西洋美女、guoneimeinv 国内美女
     '''
-    first_url = 'http://www.169tp.com/{type}/list_{order}_{pageNo}.html'
+    first_url = 'http://www.169we.com/{type}/list_{order}_{pageNo}.html'
     typeList = ['xingganmeinv', 'wangyouzipai', 'gaogensiwa', 'xiyangmeinv', 'guoneimeinv']
 
     '''
@@ -28,17 +28,17 @@ class Tp169Spider(scrapy.Spider):
     '''
     def start_requests(self):
         # 抓取图片数据
-        order = 1
-        for type in self.typeList:
-            for i in range(1, 1000):
-                request = Request(self.first_url.format(type=type, order=order, pageNo=i), self.parse_pages)
-                request.meta['order'] = order
-                yield request
-            order += 1
+        # order = 1
+        # for type in self.typeList:
+        #     for i in range(1, 1000):
+        #         request = Request(self.first_url.format(type=type, order=order, pageNo=i), self.parse_pages)
+        #         request.meta['order'] = order
+        #         yield request
+        #     order += 1
 
-        # request = Request(self.first_url.format(type='xingganmeinv', order=1, pageNo=2), self.parse_pages)
-        # request.meta['order'] = 1
-        # yield request
+        request = Request(self.first_url.format(type='xingganmeinv', order=1, pageNo=2), self.parse_pages)
+        request.meta['order'] = 1
+        yield request
 
     '''
     处理每页内容
