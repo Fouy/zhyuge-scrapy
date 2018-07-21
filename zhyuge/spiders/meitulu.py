@@ -22,10 +22,13 @@ class MeituluSpider(scrapy.Spider):
         baoru 爆乳 xinggan 性感 youhuo 诱惑 meixiong 美胸 shaofu 少妇 changtui 长腿 mengmeizi 萌妹子
         luoli 萝莉 keai 可爱 huwai 户外 bijini 比基尼 qingchun 清纯 weimei 唯美 qingxin 清新
     '''
-    first_url = 'https://www.meitulu.com/t/{type}/{pageNo}.html'
-    typeList = ['nvshen', 'jipin', 'nenmo', 'wangluohongren', 'fengsuniang', 'qizhi', 'youwu',
-        'baoru', 'xinggan', 'youhuo', 'meixiong', 'shaofu', 'changtui', 'mengmeizi',
-        'luoli', 'keai', 'huwai', 'bijini', 'qingchun', 'weimei', 'qingxin' ]
+    # first_url = 'https://www.meitulu.com/t/{type}/{pageNo}.html'
+    # typeList = ['nvshen', 'jipin', 'nenmo', 'wangluohongren', 'fengsuniang', 'qizhi', 'youwu',
+    #     'baoru', 'xinggan', 'youhuo', 'meixiong', 'shaofu', 'changtui', 'mengmeizi',
+    #     'luoli', 'keai', 'huwai', 'bijini', 'qingchun', 'weimei', 'qingxin' ]
+
+    first_url = 'https://www.meitulu.com/{type}/{pageNo}.html'
+    typeList = ['rihan', 'gangtai', 'guochan']
 
     '''
     开始请求列表
@@ -34,7 +37,7 @@ class MeituluSpider(scrapy.Spider):
         # 抓取图片数据
         order = 1
         for type in self.typeList:
-            for i in range(1, 100):
+            for i in range(1, 139):
                 request = Request(self.first_url.format(type=type, pageNo=i), self.parse_pages)
                 request.meta['order'] = order
                 yield request
@@ -59,11 +62,13 @@ class MeituluSpider(scrapy.Spider):
 
                 item = PictureItem()
                 # 设置类型名称
-                item['type_name'] = '性感美女'
-                # if order == 1:
-                #     item['type_name'] = '性感美女'
-                # elif order == 2:
-                #     item['type_name'] = '网友自拍'
+                # item['type_name'] = '性感美女'
+                if order == 1:
+                    item['type_name'] = '日韩美女'
+                elif order == 2:
+                    item['type_name'] = '港台美女'
+                elif order == 3:
+                    item['type_name'] = '国内美女'
 
                 self.process_picture_response(li, item)
                 # yield item
@@ -98,8 +103,8 @@ class MeituluSpider(scrapy.Spider):
         # print(response.text)
         item = response.meta['pictureItem']
 
-        # 假设为 20页大小
-        total_page = '20'
+        # 假设为 42页大小
+        total_page = '42'
 
         first_url = response.url
         for i in range(1, int(total_page) + 1):
