@@ -36,16 +36,23 @@ class MeituluSpider(scrapy.Spider):
     def start_requests(self):
         # 抓取图片数据
         order = 1
+
+        # 全量数据
+        # for type in self.typeList:
+        #     for i in range(1, 139):
+        #         request = Request(self.first_url.format(type=type, pageNo=i), self.parse_pages)
+        #         request.meta['order'] = order
+        #         yield request
+        #     order += 1
+
+        # 增量数据
+        added_url = 'https://www.meitulu.com/{type}/'
         for type in self.typeList:
-            for i in range(1, 139):
-                request = Request(self.first_url.format(type=type, pageNo=i), self.parse_pages)
-                request.meta['order'] = order
-                yield request
+            request = Request(added_url.format(type=type), self.parse_pages)
+            request.meta['order'] = order
+            yield request
             order += 1
 
-        # request = Request(self.first_url.format(type='nvshen', pageNo=2), self.parse_pages)
-        # request.meta['order'] = 1
-        # yield request
 
     '''
     处理每页内容
